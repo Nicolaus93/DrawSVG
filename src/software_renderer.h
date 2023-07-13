@@ -78,7 +78,12 @@ class SoftwareRendererImp : public SoftwareRenderer {
   void set_render_target( unsigned char* target_buffer,
                           size_t width, size_t height );
 
+  void update_sample_buffer( float x, float y, Color color );
+
  private:
+
+  // supersample_target
+  std::vector<unsigned char> sample_buffer;
 
   // Primitive Drawing //
 
