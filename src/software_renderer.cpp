@@ -56,11 +56,12 @@ void SoftwareRendererImp::set_render_target( unsigned char* render_target,
   this->target_h = height;
   // Task 4: 
   // You may want to modify this for supersampling support
-  int correction_fct = std::round(std::pow(4, this->sample_rate - 1));  // {1, 4, 16, 64} as sample rate goes from 1 to 4
-  // size_t supersample_size = 4 * std::pow(2, this->sample_rate - 1) * width * std::pow(2, this->sample_rate - 1) * height;
+  int correction_fct = std::round(std::pow(2, this->sample_rate - 1));  // {1, 2, 4, 8} as sample rate goes from 1 to 4
+  this->target_w *= correction_fct;
+  this->target_h *= correction_fct;
 
-  // size_t supersample_size = 4 * 2 * width * 2 * height;
-  size_t supersample_size = 4 * width * height;
+  std::cout << this->target_w << "\n";
+  size_t supersample_size = 4 * this->target_w * this->target_h;
   this->sample_buffer = std::vector<unsigned char>(supersample_size, 255);
 }
 
@@ -523,9 +524,9 @@ void SoftwareRendererImp::rasterize_triangle( float x0, float y0,
   }
   std::vector<Vector2D> sample_pts;
   find_raster_points(triangle, bbox, sample_pts, true);
-  for (auto& p : sample_pts) {
-    this->update_sample_buffer(p.x, p.y, color);
-  }
+  // for (auto& p : sample_pts) {
+  //   this->update_sample_buffer(p.x, p.y, color);
+  // }
 }
 
 void SoftwareRendererImp::rasterize_image( float x0, float y0,
@@ -542,37 +543,37 @@ void SoftwareRendererImp::resolve( void ) {
   // Task 4: 
   // Implement supersampling
   // You may also need to modify other functions marked with "Task 4".
-  int count = 0;
-  for (int x = 0; x < this->target_w; ++x) {
-    for (int y = 0; y < this->target_h; ++y) {
-      std::vector<Vector2D> pts_to_check{
-          Vector2D(x - 0.25, y - 0.25), 
-          Vector2D(x + 0.25, y - 0.25),
-          Vector2D(x - 0.25, y + 0.25),
-          Vector2D(x + 0.25, y + 0.25),
-        };
-      for ( int i = 0; i < 4; ++i ) {
-        int sum = 0;
-        int count = 0;
-        for (auto& p : pts_to_check) {
-          int sx = (int) floor(x * 2);
-          int sy = (int) floor(y * 2);
+  // int count = 0;
+  // for (int x = 0; x < this->target_w; ++x) {
+  //   for (int y = 0; y < this->target_h; ++y) {
+  //     std::vector<Vector2D> pts_to_check{
+  //         Vector2D(x - 0.25, y - 0.25), 
+  //         Vector2D(x + 0.25, y - 0.25),
+  //         Vector2D(x - 0.25, y + 0.25),
+  //         Vector2D(x + 0.25, y + 0.25),
+  //       };
+  //     for ( int i = 0; i < 4; ++i ) {
+  //       int sum = 0;
+  //       int count = 0;
+  //       for (auto& p : pts_to_check) {
+  //         int sx = (int) floor(x * 2);
+  //         int sy = (int) floor(y * 2);
 
-          if ( sx < 0 || sx >= target_w * 2) continue;
-          if ( sy < 0 || sy >= target_h * 2) continue;
+  //         if ( sx < 0 || sx >= target_w * 2) continue;
+  //         if ( sy < 0 || sy >= target_h * 2) continue;
 
-          count += 1;
-          sum += sample_buffer.at(4 * (sx + sy * target_w * 2) + i);
-        }
-        int old_value = static_cast<int>(render_target[4 * (x + y * target_w) + i]);
-        int new_value = sum / count;
-        // if (old_value != new_value) {
-        //   std::cout << "before: " << old_value << ", after: " << new_value << "\n";
-        // }
-        render_target[4 * (x + y * target_w) + i] = sum / count;
-      }
-    }
-  }
+  //         count += 1;
+  //         sum += sample_buffer.at(4 * (sx + sy * target_w * 2) + i);
+  //       }
+  //       int old_value = static_cast<int>(render_target[4 * (x + y * target_w) + i]);
+  //       int new_value = sum / count;
+  //       // if (old_value != new_value) {
+  //       //   std::cout << "before: " << old_value << ", after: " << new_value << "\n";
+  //       // }
+  //       render_target[4 * (x + y * target_w) + i] = sum / count;
+  //     }
+  //   }
+  // }
   
 }
 
