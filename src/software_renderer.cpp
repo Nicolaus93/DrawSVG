@@ -16,8 +16,6 @@ namespace CMU462 {
 
 void SoftwareRendererImp::draw_svg( SVG& svg ) {
 
-  this->sample_rate = 2;
-
   // set top level transformation
   transformation = svg_2_screen;
 
@@ -47,8 +45,9 @@ void SoftwareRendererImp::set_sample_rate( size_t sample_rate ) {
   // Task 4: 
   // You may want to modify this for supersampling support
   this->sample_rate = sample_rate; 
-  // size_t supersample_size = 4 * (this->target_w * this->sample_rate) * (this->target_h * this->sample_rate);
-  // fill(this->sample_buffer.begin(), this->sample_buffer.end(), 255);
+  size_t supersample_size = 4 * (this->target_w * this->sample_rate) * (this->target_h * this->sample_rate);
+  this->sample_buffer.resize(supersample_size);
+  fill(this->sample_buffer.begin(), this->sample_buffer.end(), 255);
 }
 
 void SoftwareRendererImp::set_render_target( unsigned char* render_target,
@@ -60,7 +59,7 @@ void SoftwareRendererImp::set_render_target( unsigned char* render_target,
   
   // Task 4: 
   // You may want to modify this for supersampling support
-  size_t supersample_size = 4 * this->target_w * this->sample_rate * this->target_h * this->sample_rate;
+  size_t supersample_size = 4 * this->target_w * this->target_h;
   this->sample_buffer = std::vector<unsigned char>(supersample_size, 255);
 }
 
