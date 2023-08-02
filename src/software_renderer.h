@@ -78,7 +78,7 @@ class SoftwareRendererImp : public SoftwareRenderer {
   void set_render_target( unsigned char* target_buffer,
                           size_t width, size_t height );
 
-  void update_sample_buffer( float x, float y, Color color );
+  void update_sample_buffer( float x, float y, Color color, bool with_neighs );
 
  private:
 
