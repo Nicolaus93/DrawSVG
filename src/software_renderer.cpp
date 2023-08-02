@@ -235,25 +235,38 @@ void SoftwareRendererImp::rasterize_point( float x, float y, Color color ) {
   if ( sy < 0 || sy >= target_h ) return;
 
   // fill sample - NOT doing alpha blending!
-  render_target[4 * (sx + sy * target_w)    ] = (uint8_t) (color.r * 255);
-  render_target[4 * (sx + sy * target_w) + 1] = (uint8_t) (color.g * 255);
-  render_target[4 * (sx + sy * target_w) + 2] = (uint8_t) (color.b * 255);
-  render_target[4 * (sx + sy * target_w) + 3] = (uint8_t) (color.a * 255);
-
+  this->update_sample_buffer(sx, sy, color, true);
 }
 
 
-void SoftwareRendererImp::update_sample_buffer(float x, float y, Color color) {
+void SoftwareRendererImp::update_sample_buffer(float x, float y, Color color, bool with_neighs = false) {
   int sx = (int) floor(x * this->sample_rate);
   int sy = (int) floor(y * this->sample_rate);
 
   if ( sx < 0 || sx >= target_w * this->sample_rate) return;
   if ( sy < 0 || sy >= target_h * this->sample_rate) return;
 
-  sample_buffer[4 * (sx + sy * target_w * this->sample_rate)    ] = (uint8_t) (color.r * 255);
-  sample_buffer[4 * (sx + sy * target_w * this->sample_rate) + 1] = (uint8_t) (color.g * 255);
-  sample_buffer[4 * (sx + sy * target_w * this->sample_rate) + 2] = (uint8_t) (color.b * 255);
-  sample_buffer[4 * (sx + sy * target_w * this->sample_rate) + 3] = (uint8_t) (color.a * 255);
+  int it = with_neighs? this->sample_rate : 1;
+  for (int i = 0; i < it; ++i) {
+    for (int j = 0; j < it; ++j ) {
+      sample_buffer[4 * (sx + i + (sy + j) * target_w * this->sample_rate)    ] = (uint8_t) (color.r * 255);
+      sample_buffer[4 * (sx + i + (sy + j) * target_w * this->sample_rate) + 1] = (uint8_t) (color.g * 255);
+      sample_buffer[4 * (sx + i + (sy + j) * target_w * this->sample_rate) + 2] = (uint8_t) (color.b * 255);
+      sample_buffer[4 * (sx + i + (sy + j) * target_w * this->sample_rate) + 3] = (uint8_t) (color.a * 255);
+    }
+  }
+}
+
+
+
+std::vector<Vector2D> get_neighbours(const Vector2D& pnt, int sample_rate) {
+  std::vector<Vector2D> neighbours;
+  for (int i = 0; i < sample_rate; ++i) {
+    for (int j = 0; j < sample_rate; ++j) {
+      neighbours.emplace_back(Vector2D(pnt.x + (float) i / sample_rate, pnt.y + (float) j / sample_rate));
+    }
+  }
+  return neighbours;
 }
 
 
@@ -426,17 +439,6 @@ bool box_triangle_int(const Rect& bbox,
     return false;
   }
   return true;
-}
-
-
-std::vector<Vector2D> get_neighbours(const Vector2D& pnt, int sample_rate) {
-  std::vector<Vector2D> neighbours;
-  for (int i = 0; i < sample_rate; ++i) {
-    for (int j = 0; j < sample_rate; ++j) {
-      neighbours.emplace_back(Vector2D(pnt.x + (float) i / sample_rate, pnt.y + (float) j / sample_rate));
-    }
-  }
-  return neighbours;
 }
 
 
